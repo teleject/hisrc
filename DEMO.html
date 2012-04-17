@@ -6,27 +6,31 @@
   <script>
   $(document).ready(function(){
     $(".hisrc img").hisrc();
-    $(".hisrc img+img+img").hisrc({ minwidth: 800 });
+    //$(".hisrc img+img+img").hisrc({ minwidth: 800 });
+      localStorage.removeItem("fsjs");
   })
   </script>
  <style type="text/css">
-	img {
+	imgOFF {
 		width: 100%;
 	}
+    img {
+        width: 640px;
+    }
  </style>
 </head>
 <body>
 
 <h1>HiSRC Images</h1>	
 	<div class="hisrc">
-		<img src="TEST/TEST-lowresolution.png" data-hisrc="TEST/TEST-hiresolution.png">
-		<img src="http://placehold.it/400x200.png" data-hisrc="http://placehold.it/640x200.png">
-		<img src="http://placehold.it/400x200.png" data-hisrc="http://placehold.it/800x200.png">
+		<img src="TEST/halloween-mobile-1st.png" data-1x="TEST/halloween-x1.png" data-2x="TEST/halloween-x2.jpg">
+		<!--<img src="http://placehold.it/400x200.png" data-hisrc="http://placehold.it/640x200.png">
+		<img src="http://placehold.it/400x200.png" data-hisrc="http://placehold.it/800x200.png">-->
 	</div>
 
 <h2>Regular images</h2>	
-	<img src="http://placehold.it/400x200.png">
-	<img src="http://placehold.it/400x200.png">
+	<!--<img src="http://placehold.it/400x200.png">
+	<img src="http://placehold.it/400x200.png">-->
  
 </body>
 </html>
