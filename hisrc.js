@@ -192,66 +192,119 @@
 
 				// trigger swap once speedtest is complete.
 				$.hisrc.els.trigger('swapres.hisrc');
+			},
+
+			setImageSource = function ( $el, src ) {
+
+				// $el.attr( 'src', src );
+
+				$el.attr('src', 'data:image/gif;base64,R0lGODlhAQABAIAAAMz/AAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==')
+					.css('max-height', '100%')
+					.css('max-width', '100%')
+					.css('background', 'url("' + src + '") no-repeat 0 0')
+					.css('background-size', 'contain');
+
 			};
 
 		return this.each(function(){
-			var $el = $(this);
-			$el.data('m1src', $el.attr('src'))
-				.attr('width', $el.width())
-				.attr('height', $el.height());
+			var $el = $(this),
+				breakpoints = [];
+
+			console.log('init width: ' + $el.width());
+
+			$el.data('m1src', $el.attr('src'));
+			if ($el.width() > 0) {
+				$el.attr('width', $el.width());
+				$el.attr('height', $el.height());
+			}
+
+			// parse breakpoints.
+			$.each( $el.data(), function(key, value) {
+				if (key && (key.toLowerCase().indexOf('maxwidth') === 0 || key.toLowerCase().indexOf('minwidth') === 0)) {
+					var width = key.substring(3).match( /\d+/g );
+					if (width.length === 1) {
+						breakpoints.push( {
+							key: key,
+							type: ( key.toLowerCase().indexOf('max') === 0 ? 'max' : 'min' ),
+							width: width[0]
+						} );
+					}
+				}
+			});
+			console.log(breakpoints);
+
+			breakpoints.sort(function( a, b ) {
+				return b.width - a.width;
+			});
+			console.log(breakpoints);
 
 			$el
 				.on('swapres.hisrc', function(){
 					console.log('swapres');
 
-					initSpeedTest();
+					// if breakpoints are defined just use them and ignore the rest.
+					if ( breakpoints.length > 0 ) {
 
-					if (speedConnectionStatus === STATUS_COMPLETE) {
-						console.log('speed test complete');
-						console.log('band:' + $.hisrc.bandwidth);
-						console.log('Kbps:' + $.hisrc.connectionKbps);
+						// loop threw each break point and try apply it.
+						var windowWidth = $(window).width();
+						var activeBreakpoint = null;
+						$.each( breakpoints, function(index, bp) {
+							if ( bp.type === 'max' ) {
+								if ( windowWidth <= bp.width ) {
+									console.log('matched breakpoint: ' +  bp.key);
+									activeBreakpoint = bp;
+								}
+							} else {
+								if ( windowWidth >= bp.width ) {
+									console.log('matched breakpoint: ' +  bp.key);
+									activeBreakpoint = bp;
+								}
+							}
+						});
+						// fallback to mobile first if no matches.
+						if ( activeBreakpoint != null ) {
+							console.log('using breakpoint: ' + activeBreakpoint.key);
+							setImageSource( $el, $el.data( activeBreakpoint.key ) );
 
-						if (isSlowConnection) {
-							console.log('using mobile1st');
-							$el.attr('src', $el.data('m1src'));
 						} else {
-							//if ($.hisrc.bandwidth === 'low') {
-							$el.attr('src', 'data:image/gif;base64,R0lGODlhAQABAIAAAMz/AAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==')
-								.css('max-height', '100%')
-								.css('max-width', '100%');
-
-							// check if client can get high res image
-							if ($.hisrc.devicePixelRatio > 1 && $.hisrc.bandwidth === 'high') {
-								console.log('using 2x');
-								//$el.attr('src', $el.data('2x'));
-								$el.css('background', 'url("' + $el.data('2x') + '") no-repeat 0 0')
-									.css('background-size', 'contain');
-							} else {
-								console.log('using 1x');
-								//$el.attr('src', $el.data('1x'));
-								$el.css('background', 'url("' + $el.data('1x') + '") no-repeat 0 0')
-									.css('background-size', 'contain');
-							}
-							/*
-							if ($(window).width() > settings.minwidth) {
-								$el.attr('src', $el.data('hisrc'))
-							} else {
-								$el.attr('src', $el.data('m1src'));
-							}
-							*/
+							console.log('using mobile1st');
+							$el.attr( 'src', $el.data('m1src') );
 						}
+
+					} else {
+
+						initSpeedTest();
+
+						if (speedConnectionStatus === STATUS_COMPLETE) {
+							console.log('speed test complete');
+							console.log('band:' + $.hisrc.bandwidth);
+							console.log('Kbps:' + $.hisrc.connectionKbps);
+
+							if (isSlowConnection) {
+
+								console.log('using mobile1st');
+								$el.attr( 'src', $el.data('m1src') );
+
+							} else {
+
+								// check if client can get high res image
+								if ($.hisrc.devicePixelRatio > 1 && $.hisrc.bandwidth === 'high') {
+									console.log('using 2x');
+									setImageSource( $el, $el.data('2x') );
+								} else {
+									console.log('using 1x');
+									setImageSource( $el, $el.data('1x') );
+								}
+
+							}
+						}
+
 					}
 				})
 				.trigger('swapres.hisrc');
 		})
 	}
 
-
-
 })(jQuery);
 
-
-console.log = function(msg) {
-	$('body').append('<p>' + msg + '</p>')
-}
 
