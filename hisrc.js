@@ -217,7 +217,7 @@
 						} else {
 							//if ($.hisrc.bandwidth === 'low') {
 							$el.attr('src', 'data:image/gif;base64,R0lGODlhAQABAIAAAMz/AAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==')
-								.css('height', 'auto')
+								.css('max-height', '100%')
 								.css('max-width', '100%');
 
 							// check if client can get high res image
