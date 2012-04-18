@@ -9,7 +9,6 @@
 (function($){
 	$.hisrc = {
 		els: $(),
-		init: false,
 		bandwidth: null,
 		connectionTestResult: null,
 		connectionKbps: null,
@@ -46,12 +45,6 @@
 		console.log('dpr:' + $.hisrc.devicePixelRatio);
 
 		$.hisrc.els = $.hisrc.els.add(this);
-
-		if (!$.hisrc.init) {
-			$(window).on('resize.hisrc', function(){
-				$.hisrc.els.trigger('swapres.hisrc');
-			});
-		}
 
 		// variables/functions below for speed test are taken from Foresight.js
 		// Copyright (c) 2012 Adam Bradley
@@ -172,7 +165,7 @@
 
 			speedTestComplete = function ( connTestResult, expireMinutes ) {
 				// if we haven't already gotten a speed connection status then save the info
-				if (speedConnectionStatus === STATUS_COMPLETE) return;
+				if (speedConnectionStatus === STATUS_COMPLETE) { return; }
 
 				// first one with an answer wins
 				speedConnectionStatus = STATUS_COMPLETE;
@@ -191,7 +184,7 @@
 				} catch( e ) { }
 
 				// trigger swap once speedtest is complete.
-				$.hisrc.els.trigger('swapres.hisrc');
+				$.hisrc.els.trigger('refresh.hisrc');
 			},
 
 			setImageSource = function ( $el, src ) {
@@ -219,8 +212,8 @@
 				$el.attr('height', $el.height());
 			}
 
-			$el.on('swapres.hisrc', function(){
-				console.log('swapres');
+			$el.on('refresh.hisrc', function(){
+				console.log('refresh');
 
 				initSpeedTest();
 
@@ -248,7 +241,7 @@
 					}
 				}
 
-			}).trigger('swapres.hisrc');
+			}).trigger('refresh.hisrc');
 
 		});
 	};
