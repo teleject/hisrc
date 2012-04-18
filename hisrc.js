@@ -15,17 +15,17 @@
 		connectionKbps: null,
 		connectionType: null,
 		devicePixelRatio: null
-	}
+	};
 
 	$.hisrc.defaults = {
-		// change minimum width, if you wish
-		minwidth: 640,
+		useTransparentGif: false,
+		transparentGifSrc: 'data:image/gif;base64,R0lGODlhAQABAIAAAMz/AAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==',
 		minKbpsForHighBandwidth: 300,
 		speedTestUri: 'http://foresightjs.appspot.com/speed-test/50K',
 		speedTestKB: 50,
 		speedTestExpireMinutes: 30,
 		forcedBandwidth: false
-	}
+	};
 
 
 	$.fn.hisrc = function(options) {
@@ -195,129 +195,63 @@
 			},
 
 			setImageSource = function ( $el, src ) {
-
-				// $el.attr( 'src', src );
-
-				$el.attr('src', 'data:image/gif;base64,R0lGODlhAQABAIAAAMz/AAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==')
-					.css('max-height', '100%')
-					.css('max-width', '100%')
-					.css('background', 'url("' + src + '") no-repeat 0 0')
-					.css('background-size', 'contain');
-
+				if ( settings.useTransparentGif ) {
+					$el.attr('src', settings.transparentGifSrc)
+						.css('max-height', '100%')
+						.css('max-width', '100%')
+						.css('background', 'url("' + src + '") no-repeat 0 0')
+						.css('background-size', 'contain');
+				} else {
+					$el.attr( 'src', src );
+				}
 			};
 
 		return this.each(function(){
-			var $el = $(this),
-				maxWidths = [],
-				minWidths = [];
-
-			console.log('init width: ' + $el.width());
+			var $el = $(this);
 
 			$el.data('m1src', $el.attr('src'));
-			if ($el.width() > 0) {
+
+			// check for zero which often happens in safari.
+			if (!$el.attr('width') &&  $el.width() > 0) {
 				$el.attr('width', $el.width());
+			}
+			if (!$el.attr('height') &&  $el.height() > 0) {
 				$el.attr('height', $el.height());
 			}
 
-			// parse breakpoints.
-			$.each( $el.data(), function(key, value) {
-				if (key && (key.toLowerCase().indexOf('maxwidth') === 0 || key.toLowerCase().indexOf('minwidth') === 0)) {
-					var width = key.substring(3).match( /\d+/g );
-					if (width.length === 1) {
-						var bp = {
-							key: key,
-							type: ( key.toLowerCase().indexOf('max') === 0 ? 'max' : 'min' ),
-							width: width[0]
-						};
+			$el.on('swapres.hisrc', function(){
+				console.log('swapres');
 
-						if ( bp.type === 'max' ) {
-							maxWidths.push( bp );
-						}
-						else {
-							minWidths.push( bp )
-						}
-					}
-				}
-			});
-			console.log(minWidths);
-			// sort low to high.
-			minWidths.sort(function( a, b ) {
-				return a.width - b.width;
-			});
-			console.log(minWidths);
+				initSpeedTest();
 
-			console.log(maxWidths);
-			// sort high to low.
-			maxWidths.sort(function( a, b ) {
-				return b.width - a.width;
-			});
-			console.log(maxWidths);
+				if (speedConnectionStatus === STATUS_COMPLETE) {
+					console.log('speed test complete');
+					console.log('band:' + $.hisrc.bandwidth);
+					console.log('Kbps:' + $.hisrc.connectionKbps);
 
-			$el
-				.on('swapres.hisrc', function(){
-					console.log('swapres');
+					if (isSlowConnection) {
 
-					// if breakpoints are defined just use them and ignore the rest.
-					if ( maxWidths.length > 0 || minWidths.length > 0 ) {
-
-						// loop threw each break point and try apply it.
-						var windowWidth = $(window).width();
-						var activeBreakpoint = null;
-						$.each( maxWidths, function(index, bp) {
-							if ( windowWidth <= bp.width ) {
-								console.log('matched breakpoint: ' +  bp.key);
-								activeBreakpoint = bp;
-							}
-						});
-						$.each( minWidths, function(index, bp) {
-							if ( windowWidth >= bp.width ) {
-								console.log('matched breakpoint: ' +  bp.key);
-								activeBreakpoint = bp;
-							}
-						});
-						// fallback to mobile first if no matches.
-						if ( activeBreakpoint != null ) {
-							console.log('using breakpoint: ' + activeBreakpoint.key);
-							setImageSource( $el, $el.data( activeBreakpoint.key ) );
-
-						} else {
-							console.log('using mobile1st');
-							$el.attr( 'src', $el.data('m1src') );
-						}
+						console.log('using mobile1st');
+						$el.attr( 'src', $el.data('m1src') );
 
 					} else {
 
-						initSpeedTest();
-
-						if (speedConnectionStatus === STATUS_COMPLETE) {
-							console.log('speed test complete');
-							console.log('band:' + $.hisrc.bandwidth);
-							console.log('Kbps:' + $.hisrc.connectionKbps);
-
-							if (isSlowConnection) {
-
-								console.log('using mobile1st');
-								$el.attr( 'src', $el.data('m1src') );
-
-							} else {
-
-								// check if client can get high res image
-								if ($.hisrc.devicePixelRatio > 1 && $.hisrc.bandwidth === 'high') {
-									console.log('using 2x');
-									setImageSource( $el, $el.data('2x') );
-								} else {
-									console.log('using 1x');
-									setImageSource( $el, $el.data('1x') );
-								}
-
-							}
+						// check if client can get high res image
+						if ($.hisrc.devicePixelRatio > 1 && $.hisrc.bandwidth === 'high') {
+							console.log('using 2x');
+							setImageSource( $el, $el.data('2x') );
+						} else {
+							console.log('using 1x');
+							setImageSource( $el, $el.data('1x') );
 						}
 
 					}
-				})
-				.trigger('swapres.hisrc');
-		})
-	}
+				}
+
+			}).trigger('swapres.hisrc');
+
+		});
+	};
 
 })(jQuery);
 

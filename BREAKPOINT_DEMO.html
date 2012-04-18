@@ -1,0 +1,44 @@
+<!doctype html>
+<html>
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.js"></script>
+  <script src="breakpoint.js"></script>
+  <script>
+  $(document).ready(function(){
+    $(".breakpoint img").breakpoint();
+  });
+
+  var alertFallback = true;
+  if (typeof console === "undefined" || typeof console.log === "undefined") {
+    console = {};
+    if (alertFallback) {
+      console.log = function(msg) {
+        //alert(msg);
+      };
+    } else {
+      console.log = function() {};
+    }
+  }
+
+  console.logOFF = function(msg) {
+    $('body').append('<p>' + msg + '</p>')
+  }
+
+  </script>
+</head>
+<body>
+
+<h1>Breakpoint Images</h1>
+<div class="breakpoint">
+    <img src="TEST/halloween-mobile-1st.png"
+         data-maxwidth320px="TEST/halloween-x1.png"
+         data-minwidth1124px="TEST/halloween-x2.jpg"
+         data-minwidth1024px="TEST/halloween-x2.jpg"
+         data-maxwidth1023px="TEST/halloween-x2.jpg"
+         data-maxwidth767px="TEST/halloween-x1.png"
+         data-maxwidth479px="TEST/halloween-x1.png"
+         alt="Celebrating Halloween in style" />
+</div>
+
+</body>
+</html>

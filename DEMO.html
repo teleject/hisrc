@@ -9,9 +9,9 @@
       localStorage.removeItem("fsjs");
     } catch( e ) { }
 
-    $(".hisrc img").hisrc();
-    //$(".hisrc img+img+img").hisrc({ minwidth: 800 });
-
+    $(".hisrc img").hisrc({
+      useTransparentGif: true
+    });
   });
 
   var alertFallback = true;
@@ -37,6 +37,7 @@
 	}
     imgOFF {
         width: 640px;
+        height: 480px;
     }
  </style>
 </head>
@@ -44,7 +45,7 @@
 
 <h1>HiSRC Images</h1>	
 	<div class="hisrc">
-		<img src="TEST/halloween-mobile-1st.png"
+		<img src="TEST/halloween-mobile-1st.png" width="250" height="222"
              data-1x="TEST/halloween-x1.png"
              data-2x="TEST/halloween-x2.jpg"
              data-maxwidth320px="TEST/halloween-x1.png"
