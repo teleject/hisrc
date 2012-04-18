@@ -208,7 +208,8 @@
 
 		return this.each(function(){
 			var $el = $(this),
-				breakpoints = [];
+				maxWidths = [],
+				minWidths = [];
 
 			console.log('init width: ' + $el.width());
 
@@ -223,42 +224,55 @@
 				if (key && (key.toLowerCase().indexOf('maxwidth') === 0 || key.toLowerCase().indexOf('minwidth') === 0)) {
 					var width = key.substring(3).match( /\d+/g );
 					if (width.length === 1) {
-						breakpoints.push( {
+						var bp = {
 							key: key,
 							type: ( key.toLowerCase().indexOf('max') === 0 ? 'max' : 'min' ),
 							width: width[0]
-						} );
+						};
+
+						if ( bp.type === 'max' ) {
+							maxWidths.push( bp );
+						}
+						else {
+							minWidths.push( bp )
+						}
 					}
 				}
 			});
-			console.log(breakpoints);
+			console.log(minWidths);
+			// sort low to high.
+			minWidths.sort(function( a, b ) {
+				return a.width - b.width;
+			});
+			console.log(minWidths);
 
-			breakpoints.sort(function( a, b ) {
+			console.log(maxWidths);
+			// sort high to low.
+			maxWidths.sort(function( a, b ) {
 				return b.width - a.width;
 			});
-			console.log(breakpoints);
+			console.log(maxWidths);
 
 			$el
 				.on('swapres.hisrc', function(){
 					console.log('swapres');
 
 					// if breakpoints are defined just use them and ignore the rest.
-					if ( breakpoints.length > 0 ) {
+					if ( maxWidths.length > 0 || minWidths.length > 0 ) {
 
 						// loop threw each break point and try apply it.
 						var windowWidth = $(window).width();
 						var activeBreakpoint = null;
-						$.each( breakpoints, function(index, bp) {
-							if ( bp.type === 'max' ) {
-								if ( windowWidth <= bp.width ) {
-									console.log('matched breakpoint: ' +  bp.key);
-									activeBreakpoint = bp;
-								}
-							} else {
-								if ( windowWidth >= bp.width ) {
-									console.log('matched breakpoint: ' +  bp.key);
-									activeBreakpoint = bp;
-								}
+						$.each( maxWidths, function(index, bp) {
+							if ( windowWidth <= bp.width ) {
+								console.log('matched breakpoint: ' +  bp.key);
+								activeBreakpoint = bp;
+							}
+						});
+						$.each( minWidths, function(index, bp) {
+							if ( windowWidth >= bp.width ) {
+								console.log('matched breakpoint: ' +  bp.key);
+								activeBreakpoint = bp;
 							}
 						});
 						// fallback to mobile first if no matches.
