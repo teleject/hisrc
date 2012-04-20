@@ -8,7 +8,6 @@
 
 (function($){
 	$.hisrc = {
-		els: $(),
 		bandwidth: null,
 		connectionTestResult: null,
 		connectionKbps: null,
@@ -26,25 +25,31 @@
 		forcedBandwidth: false
 	};
 
+	// for performance, run this right away (requires jQuery, but no need to wait for DOM to be ready)
+	$.hisrc.speedTest = function() {
+		$(window).hisrc();
+	};
 
 	$.fn.hisrc = function(options) {
-		var settings = $.extend({}, $.hisrc.defaults, options);
+		var settings = $.extend({}, $.hisrc.defaults, options),
 
-		// check bandwidth via @Modernizr's network-connection.js
-		var connection = navigator.connection || { type: 0 }; // polyfill
+			$els = $(this),
 
-		var isSlowConnection = connection.type == 3
+			// check bandwidth via @Modernizr's network-connection.js
+			connection = navigator.connection || { type: 0 }, // polyfill
+
+			isSlowConnection = connection.type == 3
 								|| connection.type == 4
 								|| /^[23]g$/.test(connection.type);
 
+
 		// get pixel ratio
 		$.hisrc.devicePixelRatio = 1;
-		if(window.devicePixelRatio !== undefined) { $.hisrc.devicePixelRatio = window.devicePixelRatio };
+		if(window.devicePixelRatio !== undefined) { $.hisrc.devicePixelRatio = window.devicePixelRatio; }
 
 		console.log('isSlow:' + isSlowConnection);
 		console.log('dpr:' + $.hisrc.devicePixelRatio);
 
-		$.hisrc.els = $.hisrc.els.add(this);
 
 		// variables/functions below for speed test are taken from Foresight.js
 		// Copyright (c) 2012 Adam Bradley
@@ -61,13 +66,16 @@
 
 				// only check the connection speed once, if there is a status then we've
 				// already got info or it already started
-				if ( speedConnectionStatus ) return;
+				if ( speedConnectionStatus ) {
+					return;
+				}
 
 				// force that this device has a low or high bandwidth, used more so for debugging purposes
 				if ( settings.forcedBandwidth ) {
 					$.hisrc.bandwidth = settings.forcedBandwidth;
 					$.hisrc.connectionTestResult = 'forced';
 					speedConnectionStatus = STATUS_COMPLETE;
+					$els.trigger('speedTestComplete.hisrc');
 					return;
 				}
 
@@ -76,6 +84,7 @@
 				if ( $.hisrc.devicePixelRatio === 1 ) {
 					$.hisrc.connectionTestResult = 'skip';
 					speedConnectionStatus = STATUS_COMPLETE;
+					$els.trigger('speedTestComplete.hisrc');
 					return;
 				}
 
@@ -90,6 +99,7 @@
 					// we know this connection is slow, don't bother even doing a speed test
 					$.hisrc.connectionTestResult = 'connTypeSlow';
 					speedConnectionStatus = STATUS_COMPLETE;
+					$els.trigger('speedTestComplete.hisrc');
 					return;
 				}
 
@@ -105,6 +115,7 @@
 							$.hisrc.connectionKbps = fsData.kbps;
 							$.hisrc.connectionTestResult = 'localStorage';
 							speedConnectionStatus = STATUS_COMPLETE;
+							$els.trigger('speedTestComplete.hisrc');
 							return;
 						}
 					}
@@ -184,7 +195,7 @@
 				} catch( e ) { }
 
 				// trigger swap once speedtest is complete.
-				$.hisrc.els.trigger('refresh.hisrc');
+				$els.trigger('speedTestComplete.hisrc');
 			},
 
 			setImageSource = function ( $el, src ) {
@@ -199,10 +210,12 @@
 				}
 			};
 
-		return this.each(function(){
+		$els.each(function(){
 			var $el = $(this);
 
-			$el.data('m1src', $el.attr('src'));
+			if (!$el.data('m1src')) {
+				$el.data('m1src', $el.attr('src'));
+			}
 
 			// check for zero which often happens in safari.
 			if (!$el.attr('width') &&  $el.width() > 0) {
@@ -212,10 +225,8 @@
 				$el.attr('height', $el.height());
 			}
 
-			$el.on('refresh.hisrc', function(){
+			$el.on('speedTestComplete.hisrc', function(){
 				console.log('refresh');
-
-				initSpeedTest();
 
 				if (speedConnectionStatus === STATUS_COMPLETE) {
 					console.log('speed test complete');
@@ -237,13 +248,17 @@
 							console.log('using 1x');
 							setImageSource( $el, $el.data('1x') );
 						}
-
 					}
+					// turn off so hisrc() can be called many times on same element.
+					$el.off('speedTestComplete.hisrc');
 				}
 
-			}).trigger('refresh.hisrc');
-
+			});
 		});
+
+		initSpeedTest();
+
+		return $els;
 	};
 
 })(jQuery);

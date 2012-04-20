@@ -4,43 +4,35 @@
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.js"></script>
   <script src="hisrc.js"></script>
   <script>
-  $(document).ready(function(){
+
     try {
       localStorage.removeItem("fsjs");
     } catch( e ) { }
 
-    $(".hisrc img").hisrc({
-      useTransparentGif: true,
-      transparentGifSrc: 'TEST/spacer.gif' // use for IE
+    // for performance run speed test before dom is ready.
+    $.hisrc.speedTest();
+
+    $(document).ready(function(){
+      $(".hisrc img").hisrc({
+        useTransparentGif: true,
+        transparentGifSrc: 'TEST/spacer.gif' // use for IE
+      });
     });
-  });
 
-  var alertFallback = true;
-  if (typeof console === "undefined" || typeof console.log === "undefined") {
-    console = {};
-    if (alertFallback) {
-      console.log = function(msg) {
-        //alert(msg);
-      };
-    } else {
-      console.log = function() {};
+    // debug: prevent ie from breaking on console.log
+    var alertFallback = true;
+    if (typeof console === "undefined" || typeof console.log === "undefined") {
+      console = {};
+      if (alertFallback) {
+        console.log = function(msg) {
+          //alert(msg);
+        };
+      } else {
+        console.log = function() {};
+      }
     }
-  }
-
-  console.logOFF = function(msg) {
-    $('body').append('<p>' + msg + '</p>')
-  }
 
   </script>
- <style type="text/css">
-	imgOFF {
-		width: 100%;
-	}
-    imgOFF {
-        width: 640px;
-        height: 480px;
-    }
- </style>
 </head>
 <body>
 
