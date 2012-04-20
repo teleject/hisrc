@@ -1,7 +1,7 @@
 /*
  * Hisrc jQuery Plugin
  *
- * Copyright (c) 2011 "@1marc" Marc Grabanski
+ * Copyright (c) 2012
  * Licensed under the MIT license.
  *
  */
@@ -19,7 +19,7 @@
 		useTransparentGif: false,
 		transparentGifSrc: 'data:image/gif;base64,R0lGODlhAQABAIAAAMz/AAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==',
 		minKbpsForHighBandwidth: 300,
-		speedTestUri: 'http://foresightjs.appspot.com/speed-test/50K',
+		speedTestUri: 'https://s3.amazonaws.com/cdeutsch/50K',
 		speedTestKB: 50,
 		speedTestExpireMinutes: 30,
 		forcedBandwidth: false
@@ -46,9 +46,6 @@
 		// get pixel ratio
 		$.hisrc.devicePixelRatio = 1;
 		if(window.devicePixelRatio !== undefined) { $.hisrc.devicePixelRatio = window.devicePixelRatio; }
-
-		console.log('isSlow:' + isSlowConnection);
-		console.log('dpr:' + $.hisrc.devicePixelRatio);
 
 
 		// variables/functions below for speed test are taken from Foresight.js
@@ -134,8 +131,6 @@
 
 					var duration = ( endTime - startTime ) / 1000;
 					duration = ( duration > 1 ? duration : 1 ); // just to ensure we don't divide by 0
-
-					console.log('yeah speed test');
 
 					$.hisrc.connectionKbps = ( ( settings.speedTestKB * 1024 * 8 ) / duration ) / 1024;
 					$.hisrc.bandwidth = ( $.hisrc.connectionKbps >= settings.minKbpsForHighBandwidth ? 'high' : 'low' );
@@ -226,26 +221,17 @@
 			}
 
 			$el.on('speedTestComplete.hisrc', function(){
-				console.log('refresh');
 
 				if (speedConnectionStatus === STATUS_COMPLETE) {
-					console.log('speed test complete');
-					console.log('band:' + $.hisrc.bandwidth);
-					console.log('Kbps:' + $.hisrc.connectionKbps);
 
 					if (isSlowConnection) {
-
-						console.log('using mobile1st');
 						$el.attr( 'src', $el.data('m1src') );
-
 					} else {
 
 						// check if client can get high res image
 						if ($.hisrc.devicePixelRatio > 1 && $.hisrc.bandwidth === 'high') {
-							console.log('using 2x');
 							setImageSource( $el, $el.data('2x') );
 						} else {
-							console.log('using 1x');
 							setImageSource( $el, $el.data('1x') );
 						}
 					}

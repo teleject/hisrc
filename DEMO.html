@@ -5,6 +5,7 @@
   <script src="hisrc.js"></script>
   <script>
 
+    // for testing purposes clear local storage each time to remove cached network speed tests
     try {
       localStorage.removeItem("fsjs");
     } catch( e ) { }
@@ -13,24 +14,13 @@
     $.hisrc.speedTest();
 
     $(document).ready(function(){
+
       $(".hisrc img").hisrc({
         useTransparentGif: true,
         transparentGifSrc: 'TEST/spacer.gif' // use for IE
       });
-    });
 
-    // debug: prevent ie from breaking on console.log
-    var alertFallback = true;
-    if (typeof console === "undefined" || typeof console.log === "undefined") {
-      console = {};
-      if (alertFallback) {
-        console.log = function(msg) {
-          //alert(msg);
-        };
-      } else {
-        console.log = function() {};
-      }
-    }
+    });
 
   </script>
 </head>
@@ -42,13 +32,11 @@
              data-1x="TEST/halloween-x1.png"
              data-2x="TEST/halloween-x2.jpg"
              alt="Celebrating Halloween in style" />
-		<!--<img src="http://placehold.it/400x200.png" data-hisrc="http://placehold.it/640x200.png">
-		<img src="http://placehold.it/400x200.png" data-hisrc="http://placehold.it/800x200.png">-->
 	</div>
 
 <h2>Regular images</h2>	
-	<!--<img src="http://placehold.it/400x200.png">
-	<img src="http://placehold.it/400x200.png">-->
+	<img src="http://placehold.it/400x200.png">
+	<img src="http://placehold.it/400x200.png">
  
 </body>
 </html>
