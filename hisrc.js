@@ -45,7 +45,15 @@
 
 		// get pixel ratio
 		$.hisrc.devicePixelRatio = 1;
-		if(window.devicePixelRatio !== undefined) { $.hisrc.devicePixelRatio = window.devicePixelRatio; }
+		if(window.devicePixelRatio !== undefined) {
+			$.hisrc.devicePixelRatio = window.devicePixelRatio;
+		} else if (window.matchMedia !== undefined) {
+			for (var i = 1; i <= 2; i += 0.5) {
+				if (window.matchMedia('(min-resolution: ' + i + 'dppx)').matches) {
+					$.hisrc.devicePixelRatio = i;
+				}
+			}
+		}
 
 
 		// variables/functions below for speed test are taken from Foresight.js
