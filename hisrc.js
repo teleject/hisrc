@@ -19,7 +19,7 @@
 		useTransparentGif: false,
 		transparentGifSrc: 'data:image/gif;base64,R0lGODlhAQABAIAAAMz/AAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==',
 		minKbpsForHighBandwidth: 300,
-		speedTestUri: 'https://s3.amazonaws.com/cdeutsch/50K',
+		speedTestUri: 'https://<use-your-own-domain>.com/put-a-50K-file-here/50K',
 		speedTestKB: 50,
 		speedTestExpireMinutes: 30,
 		forcedBandwidth: false
