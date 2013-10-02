@@ -16,7 +16,9 @@ The browser loads a "mobile first" image with an old-fashion `IMG` `SRC` attribu
 
 Then the HiSRC jQuery plugin checks if the device has mobile bandwidth (like 3G) and if so leaves the "mobile first" image in place.
 
-If there is a high speed connection and the browser supports a device pixel ration greater then one a 2x image is delivered, otherwise a 1x image with better resolution then "mobile first" is delivered.
+If there is a high speed connection *and* the browser supports a device pixel ration greater, then a 2x image takes the place of the "mobile first" image.
+
+If there is a high speed and better resolution, then a 1x image takes the place of the "mobile first" image.
 
 Setting up
 =====
