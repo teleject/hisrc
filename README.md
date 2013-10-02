@@ -90,6 +90,7 @@ The network speed testing code is from [Adam Bradley's Foresight.js](https://git
 More Resources
 =====
 
+* Use Rails? Try [this version](https://github.com/haihappen/hisrc-rails)
 * Place images in background of HTML elements and set [`background-size: 100%;`](http://caniuse.com/#search=background-size) to have them scale as the element resizes. 
 * Use [vector based images](http://caniuse.com/#search=svg) for truly resizable images. 
 * [Flashpix](http://en.wikipedia.org/wiki/FlashPix) image format that stores multiple resolution versions. 
