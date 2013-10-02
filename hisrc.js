@@ -30,8 +30,11 @@
 		$(window).hisrc();
 	};
 
+
 	$.fn.hisrc = function(options) {
-		var settings = $.extend({}, $.hisrc.defaults, options),
+		var settings = $.extend({
+			callback: function() {}
+		}, $.hisrc.defaults, options),
 
 			$els = $(this),
 
@@ -213,6 +216,8 @@
 				}
 			};
 
+		settings.callback.call(this);
+
 		$els.each(function(){
 			var $el = $(this);
 
@@ -256,5 +261,4 @@
 	};
 
 })(jQuery);
-
 
