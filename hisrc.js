@@ -19,7 +19,7 @@
 		useTransparentGif: false,
 		transparentGifSrc: 'data:image/gif;base64,R0lGODlhAQABAIAAAMz/AAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==',
 		minKbpsForHighBandwidth: 300,
-		speedTestUri: 'https://s3.amazonaws.com/cdeutsch/50K',
+		speedTestUri: 'https://<use-your-own-domain>.com/put-a-50K-file-here/50K',
 		speedTestKB: 50,
 		speedTestExpireMinutes: 30,
 		forcedBandwidth: false
@@ -30,8 +30,11 @@
 		$(window).hisrc();
 	};
 
+
 	$.fn.hisrc = function(options) {
-		var settings = $.extend({}, $.hisrc.defaults, options),
+		var settings = $.extend({
+			callback: function() {}
+		}, $.hisrc.defaults, options),
 
 			$els = $(this),
 
@@ -45,7 +48,15 @@
 
 		// get pixel ratio
 		$.hisrc.devicePixelRatio = 1;
-		if(window.devicePixelRatio !== undefined) { $.hisrc.devicePixelRatio = window.devicePixelRatio; }
+		if(window.devicePixelRatio !== undefined) {
+			$.hisrc.devicePixelRatio = window.devicePixelRatio;
+		} else if (window.matchMedia !== undefined) {
+			for (var i = 1; i <= 2; i += 0.5) {
+				if (window.matchMedia('(min-resolution: ' + i + 'dppx)').matches) {
+					$.hisrc.devicePixelRatio = i;
+				}
+			}
+		}
 
 
 		// variables/functions below for speed test are taken from Foresight.js
@@ -205,6 +216,8 @@
 				}
 			};
 
+		settings.callback.call(this);
+
 		$els.each(function(){
 			var $el = $(this);
 
@@ -248,5 +261,4 @@
 	};
 
 })(jQuery);
-
 

@@ -16,7 +16,9 @@ The browser loads a "mobile first" image with an old-fashion `IMG` `SRC` attribu
 
 Then the HiSRC jQuery plugin checks if the device has mobile bandwidth (like 3G) and if so leaves the "mobile first" image in place.
 
-If there is a high speed connection and the browser supports a device pixel ration greater then one a 2x image is delivered, otherwise a 1x image with better resolution then "mobile first" is delivered.
+If there is a high speed connection *and* the browser supports a device pixel ration greater, then a 2x image takes the place of the "mobile first" image.
+
+If there is a high speed and better resolution, then a 1x image takes the place of the "mobile first" image.
 
 Setting up
 =====
@@ -90,7 +92,8 @@ The network speed testing code is from [Adam Bradley's Foresight.js](https://git
 More Resources
 =====
 
-* Place images in background of HTML elements and set [`background-size: auto;`](http://caniuse.com/#search=background-size) to have them scale as the element resizes. 
+* Use Rails? Try [this version](https://github.com/haihappen/hisrc-rails)
+* Place images in background of HTML elements and set [`background-size: 100%;`](http://caniuse.com/#search=background-size) to have them scale as the element resizes. 
 * Use [vector based images](http://caniuse.com/#search=svg) for truly resizable images. 
 * [Flashpix](http://en.wikipedia.org/wiki/FlashPix) image format that stores multiple resolution versions. 
 * Do you need a more robust, server-side solution? Try 
