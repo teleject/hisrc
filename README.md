@@ -3,7 +3,7 @@ HiSRC
 
 ### A simple jQuery plugin for adaptive images in responsive web design
 
-A twist on the old school [`LOWSRC` `IMG` attribute](http://www.w3.org/TR/html5/obsolete.html#attr-img-lowsrc), which would render a lower file size image first while a larger file size image would appears in its place later. 
+A twist on the old school [`LOWSRC` `IMG` attribute](http://www.w3.org/TR/html5/obsolete.html#attr-img-lowsrc), which would render a lower file size image first while a larger file size image would appears in its place later.
 
 Back to the future, we set in the markup and leave the lower file size image.
 
@@ -37,23 +37,26 @@ Use basic jQuery to pick out which images should be HiSRC'd:
 ```html
 $(document).ready(function(){
   $(".hisrc img").hisrc();
-  $(".hisrc img+img").hisrc({ useTransparentGif: true });
+  $(".hisrc img+img").hisrc({
+    useTransparentGif: true,
+    speedTestUri: '50K.jpg'
+  });
 })
 ```
 
-The high-resolution image links should be placed as the value of "data-1x" and "data-2x" in the markup of your web page:
+The high-resolution image links should be placed as the value of "data-1x" and "data-2x" in the markup of your web page. Alternatively if you ommit data-1x or data-2x, HiSRC will automatically use the convention of appending "@1x" or "@2x" to the filename. For example cat.png will become cat@1x.png and cat@2x.png.
 
 
 ```html
-<h1>HiSRC Images</h1>	
-	<div class="hisrc">
-		<img src="http://placehold.it/200x100.png" data-1x="http://placehold.it/400x200.png" data-2x="http://placehold.it/800x400.png">
-		<img src="http://placehold.it/200x100.png" data-1x="http://placehold.it/400x200.png" data-2x="http://placehold.it/800x400.png">
-	</div>
+<h1>HiSRC Images</h1>
+    <div class="hisrc">
+        <img src="http://placehold.it/200x100.png" data-1x="http://placehold.it/400x200.png" data-2x="http://placehold.it/800x400.png">
+        <img src="http://placehold.it/200x100.png" data-1x="http://placehold.it/400x200.png" data-2x="http://placehold.it/800x400.png">
+    </div>
 
-<h2>Regular images</h2>	
-	<img src="http://placehold.it/400x200.png">
-	<img src="http://placehold.it/400x200.png">
+<h2>Regular images</h2>
+    <img src="http://placehold.it/400x200.png">
+    <img src="http://placehold.it/400x200.png">
 ```
 
 
@@ -82,6 +85,7 @@ __speedTestExpireMinutes__ (30) - we cache the speed test results for this ammou
 
 __forcedBandwidth__ (false) - set to 'low' or 'high' to override the speed test. Mostly used for debugging.
 
+__srcIsLowResoltion__ (true) - if true then src is a low-res image will be replaced with 1x or 2x. If false, src is a 1x file already and will be replaced with 2x. Use false, if you only have two versions of the image: 1x and 2x.
 
 Attribution
 =====
@@ -93,9 +97,9 @@ More Resources
 =====
 
 * Use Rails? Try [this version](https://github.com/haihappen/hisrc-rails)
-* Place images in background of HTML elements and set [`background-size: 100%;`](http://caniuse.com/#search=background-size) to have them scale as the element resizes. 
-* Use [vector based images](http://caniuse.com/#search=svg) for truly resizable images. 
-* [Flashpix](http://en.wikipedia.org/wiki/FlashPix) image format that stores multiple resolution versions. 
-* Do you need a more robust, server-side solution? Try 
+* Place images in background of HTML elements and set [`background-size: 100%;`](http://caniuse.com/#search=background-size) to have them scale as the element resizes.
+* Use [vector based images](http://caniuse.com/#search=svg) for truly resizable images.
+* [Flashpix](http://en.wikipedia.org/wiki/FlashPix) image format that stores multiple resolution versions.
+* Do you need a more robust, server-side solution? Try
 [Responsive Images](https://github.com/filamentgroup/Responsive-Images). Requires PHP and editing `.htaccess` files
 

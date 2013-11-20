@@ -5,22 +5,23 @@
   <script src="hisrc.js"></script>
   <script>
 
-    // for testing purposes clear local storage each time to remove cached network speed tests
-    try {
-      localStorage.removeItem("fsjs");
-    } catch( e ) { }
+	// for testing purposes clear local storage each time to remove cached network speed tests
+	try {
+	  localStorage.removeItem("fsjs");
+	} catch( e ) { }
 
-    // for performance run speed test before dom is ready.
-    $.hisrc.speedTest();
+	// for performance run speed test before dom is ready.
+	$.hisrc.speedTest({ speedTestUri: '50K.jpg' });
 
-    $(document).ready(function(){
+	$(document).ready(function(){
 
-      $(".hisrc img").hisrc({
-        useTransparentGif: true,
-        transparentGifSrc: 'TEST/spacer.gif' // use for IE
-      });
+	  $(".hisrc img").hisrc({
+		useTransparentGif: true,
+        speedTestUri: '50K.jpg',
+		transparentGifSrc: 'TEST/spacer.gif' // use for IE
+	  });
 
-    });
+	});
 
   </script>
 </head>
@@ -29,14 +30,14 @@
 <h1>HiSRC Images</h1>	
 	<div class="hisrc">
 		<img src="TEST/halloween-mobile-1st.png" width="250" height="222"
-             data-1x="TEST/halloween-x1.png"
-             data-2x="TEST/halloween-x2.jpg"
-             alt="Celebrating Halloween in style" />
+			 data-1x="TEST/halloween-x1.png"
+			 data-2x="TEST/halloween-x2.jpg"
+			 alt="Celebrating Halloween in style" />
 	</div>
 
 <h2>Regular images</h2>	
 	<img src="http://placehold.it/400x200.png">
 	<img src="http://placehold.it/400x200.png">
- 
+
 </body>
 </html>

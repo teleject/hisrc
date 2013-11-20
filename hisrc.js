@@ -19,15 +19,16 @@
 		useTransparentGif: false,
 		transparentGifSrc: 'data:image/gif;base64,R0lGODlhAQABAIAAAMz/AAAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==',
 		minKbpsForHighBandwidth: 300,
-		speedTestUri: 'https://<use-your-own-domain>.com/put-a-50K-file-here/50K',
+		speedTestUri: '50K.jpg',
 		speedTestKB: 50,
 		speedTestExpireMinutes: 30,
-		forcedBandwidth: false
+		forcedBandwidth: false,
+		srcIsLowResoltion: true
 	};
 
 	// for performance, run this right away (requires jQuery, but no need to wait for DOM to be ready)
-	$.hisrc.speedTest = function() {
-		$(window).hisrc();
+	$.hisrc.speedTest = function(options) {
+		$(window).hisrc(options);
 	};
 
 
@@ -221,38 +222,54 @@
 		$els.each(function(){
 			var $el = $(this);
 
-			if (!$el.data('m1src')) {
-				$el.data('m1src', $el.attr('src'));
-			}
+			var src = $el.attr('src');
 
-			// check for zero which often happens in safari.
-			if (!$el.attr('width') &&  $el.width() > 0) {
-				$el.attr('width', $el.width());
-			}
-			if (!$el.attr('height') &&  $el.height() > 0) {
-				$el.attr('height', $el.height());
-			}
-
-			$el.on('speedTestComplete.hisrc', function(){
-
-				if (speedConnectionStatus === STATUS_COMPLETE) {
-
-					if (isSlowConnection) {
-						$el.attr( 'src', $el.data('m1src') );
-					} else {
-
-						// check if client can get high res image
-						if ($.hisrc.devicePixelRatio > 1 && $.hisrc.bandwidth === 'high') {
-							setImageSource( $el, $el.data('2x') );
-						} else {
-							setImageSource( $el, $el.data('1x') );
-						}
-					}
-					// turn off so hisrc() can be called many times on same element.
-					$el.off('speedTestComplete.hisrc');
+			if (src) {
+				if (!$el.data('m1src')) {
+					$el.data('m1src', src);
 				}
 
-			});
+				// check for zero which often happens in safari.
+				if (!$el.attr('width') &&  $el.width() > 0) {
+					$el.attr('width', $el.width());
+				}
+				if (!$el.attr('height') &&  $el.height() > 0) {
+					$el.attr('height', $el.height());
+				}
+
+				$el.on('speedTestComplete.hisrc', function(){
+
+					if (speedConnectionStatus === STATUS_COMPLETE) {
+
+						if (isSlowConnection) {
+							$el.attr( 'src', $el.data('m1src') );
+						} else {
+
+							// check if client can get high res image
+							if ($.hisrc.devicePixelRatio > 1 && $.hisrc.bandwidth === 'high') {
+								var image2x = $el.data('2x');
+								if (!image2x) {
+									// use naming convention.
+									image2x = $el.data('m1src').replace(/\.\w+$/, function(match) { return "@2x" + match; });
+								}
+								setImageSource( $el, image2x );
+							} else {
+								// don't load 1x unless src is a low res version.
+								if (settings.srcIsLowResoltion) {
+									var image1x = $el.data('1x');
+									if (!image1x) {
+										// use naming convention.
+										image1x = $el.data('m1src').replace(/\.\w+$/, function(match) { return "@1x" + match; });
+									}
+									setImageSource( $el, image1x );
+								}
+							}
+						}
+						// turn off so hisrc() can be called many times on same element.
+						$el.off('speedTestComplete.hisrc');
+					}
+				});
+			}
 		});
 
 		initSpeedTest();
