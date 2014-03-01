@@ -85,7 +85,7 @@ __speedTestExpireMinutes__ (30) - we cache the speed test results for this ammou
 
 __forcedBandwidth__ (false) - set to 'low' or 'high' to override the speed test. Mostly used for debugging.
 
-__srcIsLowResoltion__ (true) - if true then src is a low-res image will be replaced with 1x or 2x. If false, src is a 1x file already and will be replaced with 2x. Use false, if you only have two versions of the image: 1x and 2x.
+__srcIsLowResolution__ (true) - if true then src is a low-res image will be replaced with 1x or 2x. If false, src is a 1x file already and will be replaced with 2x. Use false, if you only have two versions of the image: 1x and 2x.
 
 Attribution
 =====
