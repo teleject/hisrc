@@ -23,7 +23,7 @@
 		speedTestKB: 50,
 		speedTestExpireMinutes: 30,
 		forcedBandwidth: false,
-		srcIsLowResoltion: true
+		srcIsLowResolution: true
 	};
 
 	// for performance, run this right away (requires jQuery, but no need to wait for DOM to be ready)
@@ -255,7 +255,7 @@
 								setImageSource( $el, image2x );
 							} else {
 								// don't load 1x unless src is a low res version.
-								if (settings.srcIsLowResoltion) {
+								if (settings.srcIsLowResolution) {
 									var image1x = $el.data('1x');
 									if (!image1x) {
 										// use naming convention.
