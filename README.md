@@ -77,7 +77,7 @@ __transparentGifSrc__ (data:image/gif;base64,R0lGODlhAQABAIAAAMz/AAAAACH5BAEAAAA
 
 __minKbpsForHighBandwidth__ (300) - when doing a speed test this is the minimum bandwidth considered to be "high speed"
 
-__speedTestUri__ (https://s3.amazonaws.com/cdeutsch/50K) - url used for the speed test. It's recommended to change this.
+__speedTestUri__ (50K.jpg) - url used for the speed test. It's recommended to change this.
 
 __speedTestKB__ (50) - this should equal the size of the file specified by speedTestUri so we know how long the download should take.
 
