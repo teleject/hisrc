@@ -18,7 +18,11 @@
     "description": "A simple jQuery plugin for adaptive images in responsive web design",
     "keywords": [
         "rwd",
-        "responsive web design"
+        "responsive web design",
+        "jquery-plugin",
+        "images",
+        "adpative",
+        "mobile"
     ],
     "homepage": "https://github.com/teleject/hisrc",
     "maintainers": [
