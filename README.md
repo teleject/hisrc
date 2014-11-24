@@ -12,15 +12,15 @@ However, if the HiSRC plugin detects fast network or high resolution, then a hig
 Installing HiSRC
 ====
 
-1. Use [Bower](http://bower.io/search/?q=hisrc)? Type "bower install hisrc" into the command line prompt in your project folder:
+* Use [Bower](http://bower.io/search/?q=hisrc)? Type "bower install hisrc" into the command line prompt in your project folder:
 
 `$ bower install hisrc`
 
-2. Using [node](https://www.npmjs.org/package/hisrc)? Install HiSRC with by typing "npm install hisrc" into the command line prompt:
+* Using [node](https://www.npmjs.org/package/hisrc)? Install HiSRC with by typing "npm install hisrc" into the command line prompt:
 
 `$ npm install hisrc`
 
-3. Or you can press "Download ZIP" button on the main GitHub page to get all the files and manually add them to your project.
+* Or you can press "Download ZIP" button on the main GitHub page to get all the files and manually add them to your project.
 
 
 How the HiSRC jQuery Plugin Works
