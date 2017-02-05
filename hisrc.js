@@ -12,7 +12,6 @@
 		connectionTestResult: null,
 		connectionKbps: null,
 		connectionType: null,
-		devicePixelRatio: null
 	};
 
 	$.hisrc.defaults = {
@@ -23,7 +22,9 @@
 		speedTestKB: 50,
 		speedTestExpireMinutes: 30,
 		forcedBandwidth: false,
-		srcIsLowResolution: true
+		srcIsLowResolution: true,
+		minHDSize: 1080,
+		minRetinaSize: 2560,
 	};
 
 	// for performance, run this right away (requires jQuery, but no need to wait for DOM to be ready)
@@ -36,29 +37,15 @@
 		var settings = $.extend({
 			callback: function() {}
 		}, $.hisrc.defaults, options),
+			$els = $(this);
 
-			$els = $(this),
+		// check bandwidth via @Modernizr's network-connection.js
+		var connection = navigator.connection || { type: 0 }, // polyfill
+			isSlowConnection = connection.type == 3 || connection.type == 4 || /^[23]g$/.test(connection.type);
 
-			// check bandwidth via @Modernizr's network-connection.js
-			connection = navigator.connection || { type: 0 }, // polyfill
-
-			isSlowConnection = connection.type == 3
-								|| connection.type == 4
-								|| /^[23]g$/.test(connection.type);
-
-
-		// get pixel ratio
-		$.hisrc.devicePixelRatio = 1;
-		if(window.devicePixelRatio !== undefined) {
-			$.hisrc.devicePixelRatio = window.devicePixelRatio;
-		} else if (window.matchMedia !== undefined) {
-			for (var i = 1; i <= 2; i += 0.5) {
-				if (window.matchMedia('(min-resolution: ' + i + 'dppx)').matches) {
-					$.hisrc.devicePixelRatio = i;
-				}
-			}
-		}
-
+		// Check for screen resolution (local, not global, so each hiSrc replacement call can specify different sizes)
+		var HDSupport = Math.max(screen.width, screen.height) >= settings.minHDSize,
+			retinaSupport = Math.max(screen.width, screen.height) >= settings.minRetinaSize;
 
 		// variables/functions below for speed test are taken from Foresight.js
 		// Copyright (c) 2012 Adam Bradley
@@ -228,34 +215,31 @@
 				if (!$el.data('m1src')) {
 					$el.data('m1src', src);
 				}
-
-
+				
 				$el.on('speedTestComplete.hisrc', function(){
 
 					if (speedConnectionStatus === STATUS_COMPLETE) {
 
-						if (isSlowConnection) {
+						if (isSlowConnection || !HDSupport) {
+							// Slow connection or no HD support: keep default
 							$el.attr( 'src', $el.data('m1src') );
-						} else {
-
-							// check if client can get high res image
-							if ($.hisrc.devicePixelRatio > 1 && $.hisrc.bandwidth === 'high') {
+						} else if (HDSupport){
+							// High bandwidth and atleast HD support: load higher quality image
+							if (retinaSupport && $.hisrc.bandwidth === 'high') {
 								var image2x = $el.data('2x');
 								if (!image2x) {
 									// use naming convention.
 									image2x = $el.data('m1src').replace(/\.\w+$/, function(match) { return "@2x" + match; });
 								}
 								setImageSource( $el, image2x );
-							} else {
-								// don't load 1x unless src is a low res version.
-								if (settings.srcIsLowResolution) {
-									var image1x = $el.data('1x');
-									if (!image1x) {
-										// use naming convention.
-										image1x = $el.data('m1src').replace(/\.\w+$/, function(match) { return "@1x" + match; });
-									}
-									setImageSource( $el, image1x );
+							} else if (settings.srcIsLowResolution) {
+								// High bandwidth and HD support and 1x not already loaded: load 1x
+								var image1x = $el.data('1x');
+								if (!image1x) {
+									// use naming convention.
+									image1x = $el.data('m1src').replace(/\.\w+$/, function(match) { return "@1x" + match; });
 								}
+								setImageSource( $el, image1x );
 							}
 						}
 						// turn off so hisrc() can be called many times on same element.
