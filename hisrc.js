@@ -171,6 +171,7 @@
 				setTimeout( function () {
 					speedTestComplete( 'networkSlow' );
 				}, speedTestTimeoutMS );
+				}
 			},
 
 			speedTestComplete = function ( connTestResult, expireMinutes ) {
