@@ -12,6 +12,7 @@
 		connectionTestResult: null,
 		connectionKbps: null,
 		connectionType: null,
+		secondChanceUsed: null,
 	};
 
 	$.hisrc.defaults = {
@@ -25,6 +26,7 @@
 		srcIsLowResolution: true,
 		minHDSize: 1080,
 		minRetinaSize: 2560,
+		secondChance: false,
 	};
 
 	// for performance, run this right away (requires jQuery, but no need to wait for DOM to be ready)
@@ -174,6 +176,16 @@
 			speedTestComplete = function ( connTestResult, expireMinutes ) {
 				// if we haven't already gotten a speed connection status then save the info
 				if (speedConnectionStatus === STATUS_COMPLETE) { return; }
+
+				if (settings.secondChance && !$.hisrc.secondChanceUsed && HDSupport && $.hisrc.bandwidth === 'low' 
+					&& (connTestResult === 'networkSuccess' || connTestResult === 'networkError' || connTestResult === 'networkAbort')) {
+					// Re-run the test once on HD capable devices if second chance is specified and the last try failed
+					// This should eliminate wrong bandwidth detection on desktop PCs due to bandwidth fluctuations if desired
+					// This will not affect mobile networks or devices not needing this, and will only occur once during the test expire period
+					$.hisrc.secondChanceUsed = true;
+					initSpeedTest ();
+					return;
+				}
 
 				// first one with an answer wins
 				speedConnectionStatus = STATUS_COMPLETE;
