@@ -12,7 +12,7 @@
 		connectionTestResult: null,
 		connectionKbps: null,
 		connectionType: null,
-		devicePixelRatio: null
+		secondChanceUsed: null,
 	};
 
 	$.hisrc.defaults = {
@@ -23,7 +23,10 @@
 		speedTestKB: 50,
 		speedTestExpireMinutes: 30,
 		forcedBandwidth: false,
-		srcIsLowResolution: true
+		srcIsLowResolution: true,
+		minHDSize: 1080,
+		minRetinaSize: 2560,
+		secondChance: false,
 	};
 
 	// for performance, run this right away (requires jQuery, but no need to wait for DOM to be ready)
@@ -36,29 +39,15 @@
 		var settings = $.extend({
 			callback: function() {}
 		}, $.hisrc.defaults, options),
+			$els = $(this);
 
-			$els = $(this),
+		// check bandwidth via @Modernizr's network-connection.js
+		var connection = navigator.connection || { type: 0 }, // polyfill
+			isSlowConnection = connection.type == 3 || connection.type == 4 || /^[23]g$/.test(connection.type);
 
-			// check bandwidth via @Modernizr's network-connection.js
-			connection = navigator.connection || { type: 0 }, // polyfill
-
-			isSlowConnection = connection.type == 3
-								|| connection.type == 4
-								|| /^[23]g$/.test(connection.type);
-
-
-		// get pixel ratio
-		$.hisrc.devicePixelRatio = 1;
-		if(window.devicePixelRatio !== undefined) {
-			$.hisrc.devicePixelRatio = window.devicePixelRatio;
-		} else if (window.matchMedia !== undefined) {
-			for (var i = 1; i <= 2; i += 0.5) {
-				if (window.matchMedia('(min-resolution: ' + i + 'dppx)').matches) {
-					$.hisrc.devicePixelRatio = i;
-				}
-			}
-		}
-
+		// Check for screen resolution (local, not global, so each hiSrc replacement call can specify different sizes)
+		var HDSupport = Math.max(screen.width, screen.height) >= settings.minHDSize,
+			retinaSupport = Math.max(screen.width, screen.height) >= settings.minRetinaSize;
 
 		// variables/functions below for speed test are taken from Foresight.js
 		// Copyright (c) 2012 Adam Bradley
@@ -84,16 +73,16 @@
 					$.hisrc.bandwidth = settings.forcedBandwidth;
 					$.hisrc.connectionTestResult = 'forced';
 					speedConnectionStatus = STATUS_COMPLETE;
-					$els.trigger('speedTestComplete.hisrc');
+					$(document).trigger('speedTestComplete.hisrc');
 					return;
 				}
 
 				// if the device pixel ratio is 1, then no need to do a network connection
 				// speed test since it can't show hi-res anyways
-				if ( $.hisrc.devicePixelRatio === 1 ) {
+				if ( !HDSupport ) {
 					$.hisrc.connectionTestResult = 'skip';
 					speedConnectionStatus = STATUS_COMPLETE;
-					$els.trigger('speedTestComplete.hisrc');
+					$(document).trigger('speedTestComplete.hisrc');
 					return;
 				}
 
@@ -108,7 +97,7 @@
 					// we know this connection is slow, don't bother even doing a speed test
 					$.hisrc.connectionTestResult = 'connTypeSlow';
 					speedConnectionStatus = STATUS_COMPLETE;
-					$els.trigger('speedTestComplete.hisrc');
+					$(document).trigger('speedTestComplete.hisrc');
 					return;
 				}
 
@@ -117,18 +106,23 @@
 				try {
 					var fsData = JSON.parse( localStorage.getItem( LOCAL_STORAGE_KEY ) );
 					if ( fsData !== null ) {
-						if ( ( new Date() ).getTime() < fsData.exp ) {
+						if ( ( new Date() ).getTime() < fsData.exp && settings.speedTestExpireMinutes !== 0 ) {
 							// already have connection data within our desired timeframe
 							// use this recent data instead of starting another test
 							$.hisrc.bandwidth = fsData.bw;
 							$.hisrc.connectionKbps = fsData.kbps;
 							$.hisrc.connectionTestResult = 'localStorage';
 							speedConnectionStatus = STATUS_COMPLETE;
-							$els.trigger('speedTestComplete.hisrc');
+							$(document).trigger('speedTestComplete.hisrc');
 							return;
 						}
 					}
 				} catch( e ) { }
+
+				if (speedTestUri) {
+				// Start speed test if an URI has been specified
+				// This is useful when having multiple calls to hiSrc but only one should perform a speed test
+				//alert ("Starting speed test on device with " + (retinaSupport? "Retina" : (HDSupport? "HD" : "LowDef")) + " support!");
 
 				var
 				speedTestImg = document.createElement( 'img' ),
@@ -140,9 +134,7 @@
 					// speed test image download completed
 					// figure out how long it took and an estimated connection speed
 					endTime = ( new Date() ).getTime();
-
-					var duration = ( endTime - startTime ) / 1000;
-					duration = ( duration > 1 ? duration : 1 ); // just to ensure we don't divide by 0
+					var duration = Math.max ((endTime - startTime ) / 1000, 1);
 
 					$.hisrc.connectionKbps = ( ( settings.speedTestKB * 1024 * 8 ) / duration ) / 1024;
 					$.hisrc.bandwidth = ( $.hisrc.connectionKbps >= settings.minKbpsForHighBandwidth ? 'high' : 'low' );
@@ -179,11 +171,22 @@
 				setTimeout( function () {
 					speedTestComplete( 'networkSlow' );
 				}, speedTestTimeoutMS );
+				}
 			},
 
 			speedTestComplete = function ( connTestResult, expireMinutes ) {
 				// if we haven't already gotten a speed connection status then save the info
 				if (speedConnectionStatus === STATUS_COMPLETE) { return; }
+
+				if (settings.secondChance && !$.hisrc.secondChanceUsed && HDSupport && $.hisrc.bandwidth === 'low' 
+					&& (connTestResult === 'networkSuccess' || connTestResult === 'networkError' || connTestResult === 'networkAbort')) {
+					// Re-run the test once on HD capable devices if second chance is specified and the last try failed
+					// This should eliminate wrong bandwidth detection on desktop PCs due to bandwidth fluctuations if desired
+					// This will not affect mobile networks or devices not needing this, and will only occur once during the test expire period
+					$.hisrc.secondChanceUsed = true;
+					initSpeedTest ();
+					return;
+				}
 
 				// first one with an answer wins
 				speedConnectionStatus = STATUS_COMPLETE;
@@ -201,8 +204,10 @@
 					localStorage.setItem( LOCAL_STORAGE_KEY, JSON.stringify( fsDataToSet ) );
 				} catch( e ) { }
 
-				// trigger swap once speedtest is complete.
-				$els.trigger('speedTestComplete.hisrc');
+				// invoke all hiSrc calls subscribed to the this speed test complete event
+				$(document).trigger('speedTestComplete.hisrc');
+				// clear event list so all calls to hisrc currently subscribed are removed
+				$(document).off('speedTestComplete.hisrc');
 			},
 
 			setImageSource = function ( $el, src ) {
@@ -228,47 +233,44 @@
 				if (!$el.data('m1src')) {
 					$el.data('m1src', src);
 				}
-
-				// check for zero which often happens in safari.
-				if (!$el.attr('width') &&  $el.width() > 0) {
-					$el.attr('width', $el.width());
-				}
-				if (!$el.attr('height') &&  $el.height() > 0) {
-					$el.attr('height', $el.height());
-				}
-
-				$el.on('speedTestComplete.hisrc', function(){
-
-					if (speedConnectionStatus === STATUS_COMPLETE) {
-
-						if (isSlowConnection) {
+				
+				var replace = function(){
+					if ($.hisrc.connectionTestResult) {
+						// connection test has already been completed atleast once globally
+						if (isSlowConnection || $.hisrc.bandwidth === 'low' || !HDSupport) {
+							// Slow connection or no HD support: keep default
 							$el.attr( 'src', $el.data('m1src') );
-						} else {
-
-							// check if client can get high res image
-							if ($.hisrc.devicePixelRatio > 1 && $.hisrc.bandwidth === 'high') {
+						} else if ($.hisrc.bandwidth === 'high' && HDSupport) {
+							// High bandwidth and atleast HD support: load higher quality image
+							if (retinaSupport) {
+								// High bandwidth and retina support: load 2x
 								var image2x = $el.data('2x');
 								if (!image2x) {
 									// use naming convention.
 									image2x = $el.data('m1src').replace(/\.\w+$/, function(match) { return "@2x" + match; });
 								}
 								setImageSource( $el, image2x );
-							} else {
-								// don't load 1x unless src is a low res version.
-								if (settings.srcIsLowResolution) {
-									var image1x = $el.data('1x');
-									if (!image1x) {
-										// use naming convention.
-										image1x = $el.data('m1src').replace(/\.\w+$/, function(match) { return "@1x" + match; });
-									}
-									setImageSource( $el, image1x );
+							} else if (settings.srcIsLowResolution) {
+								// High bandwidth and HD support and 1x not already loaded: load 1x
+								var image1x = $el.data('1x');
+								if (!image1x) {
+									// use naming convention.
+									image1x = $el.data('m1src').replace(/\.\w+$/, function(match) { return "@1x" + match; });
 								}
+								setImageSource( $el, image1x );
 							}
 						}
-						// turn off so hisrc() can be called many times on same element.
-						$el.off('speedTestComplete.hisrc');
 					}
-				});
+				};
+
+				// Make sure replacements are being performed once the speed test has completed
+				if (speedConnectionStatus !== STATUS_COMPLETE && !$.hisrc.connectionTestResult) {
+					// speed test not yet completed: subscribe to the complete event
+					$(document).on('speedTestComplete.hisrc', replace);
+				}
+				else { // speed test already completed: replace right now
+					replace ();
+				}
 			}
 		});
 
