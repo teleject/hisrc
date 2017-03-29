@@ -229,14 +229,6 @@
 					$el.data('m1src', src);
 				}
 
-				// check for zero which often happens in safari.
-				if (!$el.attr('width') &&  $el.width() > 0) {
-					$el.attr('width', $el.width());
-				}
-				if (!$el.attr('height') &&  $el.height() > 0) {
-					$el.attr('height', $el.height());
-				}
-
 				$el.on('speedTestComplete.hisrc', function(){
 
 					if (speedConnectionStatus === STATUS_COMPLETE) {
